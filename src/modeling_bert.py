@@ -1,3 +1,18 @@
+# =============================================================================
+# SOURCE: MiuLab/PLM-ICD (https://github.com/MiuLab/PLM-ICD)
+# Huang, Chao-Wei, Shang-Chi Tsai, and Yun-Nung Chen. 2022. "PLM-ICD:
+# Automatic ICD Coding with Pretrained Language Models." Proceedings of the
+# 4th Clinical NLP Workshop, ACL. https://aclanthology.org/2022.clinicalnlp-1.2
+#
+# Adapted by: [Julia Windegger], [560823325] for HTIN5005 Assignment 1, Part B.
+#
+# This file is unmodified except for this attribution header. It implements
+# the label-wise attention (LAAT) mechanism described in the Methods section
+# of this assignment's report — see the "elif 'laat' in self.model_mode:"
+# block for the core algorithm.
+# =============================================================================
+#
+#
 # coding=utf-8
 # Copyright 2018 The Google AI Language Team Authors and The HuggingFace Inc. team.
 # Copyright (c) 2018, NVIDIA CORPORATION.  All rights reserved.

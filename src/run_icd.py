@@ -1,3 +1,18 @@
+# =============================================================================
+# SOURCE: MiuLab/PLM-ICD (https://github.com/MiuLab/PLM-ICD)
+# Huang, Chao-Wei, Shang-Chi Tsai, and Yun-Nung Chen. 2022. "PLM-ICD:
+# Automatic ICD Coding with Pretrained Language Models." Proceedings of the
+# 4th Clinical NLP Workshop, ACL. https://aclanthology.org/2022.clinicalnlp-1.2
+#
+# Adapted by: [Julia Windegger], [560823325] for HTIN5005 Assignment 1, Part B.
+#
+# CHANGES (see inline "--- MODIFIED ---" comments for exact lines):
+#   1. Fixed removed `load_metric` import (datasets library version drift)
+#   2. Fixed removed `AdamW` import (transformers library version drift)
+#   3. Added tokenizer saving after training (original omission)
+# =============================================================================
+#
+#
 # coding=utf-8
 # Copyright 2021 The HuggingFace Inc. team. All rights reserved.
 #
@@ -12,7 +27,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Finetuning a 🤗 Transformers model for sequence classification on GLUE."""
+""" Finetuning a Transformers model for sequence classification on GLUE."""
 import argparse
 import logging
 import math
@@ -20,7 +35,12 @@ import os
 import random
 
 import datasets
-from datasets import load_dataset, load_metric
+# --- MODIFIED (own change): removed `load_metric` import
+# Original code: from datasets import load_dataset, load_metric
+# Reason: `load_metric` was removed from newer versions of the `datasets`
+# library. It is only used in an unused code path (triggered by --task_name,
+# which this assignment never sets), so it can be safely dropped.
+from datasets import load_dataset
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
 
@@ -28,8 +48,12 @@ import transformers
 import torch
 import numpy as np
 from accelerate import Accelerator, DistributedDataParallelKwargs
+# --- MODIFIED (own change): moved AdamW import to torch.optim
+# Original code: AdamW was imported from `transformers`
+# Reason: `transformers` removed its own AdamW implementation in favor of
+# PyTorch's equivalent, which is functionally the same optimizer.
+from torch.optim import AdamW
 from transformers import (
-    AdamW,
     AutoConfig,
     AutoModelForSequenceClassification,
     AutoTokenizer,
@@ -478,10 +502,19 @@ def main():
             metrics = all_metrics(yhat=all_preds, y=all_labels, yhat_raw=all_preds_raw, k=[5,8,15])
             logger.info(f"metrics for threshold {t}: {metrics}")
 
+    # --- MODIFIED (own change): also save the tokenizer after training
+    # Original code: only unwrapped_model.save_pretrained(...) was called
+    # Reason: the original code never saves the tokenizer alongside the
+    # model. But the same README later reuses this output folder as
+    # --model_name_or_path for evaluation, which needs the tokenizer to be
+    # there too — without this fix, evaluation fails with a missing
+    # tokenizer error.
     if args.output_dir is not None and args.num_train_epochs > 0:
         accelerator.wait_for_everyone()
         unwrapped_model = accelerator.unwrap_model(model)
         unwrapped_model.save_pretrained(args.output_dir, save_function=accelerator.save)
+        if accelerator.is_local_main_process:
+            tokenizer.save_pretrained(args.output_dir)
 
 
 if __name__ == "__main__":
