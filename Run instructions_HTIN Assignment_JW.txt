@@ -1,17 +1,17 @@
-Run Instructions
+_Run Instructions_
 
 This notebook is designed to run in Google Colab and reproduces the PLM-ICD reimplementation described in the accompanying report, from setting up the environment, through building the synthetic dataset, to training and evaluating all reported configurations.
 
-Before running anything
+Before running anything:
 Open the notebook in Google Colab, then go to Runtime > Change runtime type and select a GPU (a T4 GPU is sufficient and is what this project was trained on). Training this model on a CPU is not practical; the notebook includes a cell early on (Section 1.3) that checks whether a GPU was detected and will tell you to change this setting if not.
 
 You will also need your own Google Drive connected, since Colab's storage is wiped whenever a session ends. The first code cell in Section 1.1 mounts your Drive and downloads the original PLM-ICD codebase into it automatically. This only needs to happen once; later sessions will detect the code is already there and skip re-downloading it.
 
-Running order
+Running order:
 The notebook should be run from top to bottom in a single sitting where possible. Sections 2 through 8 form a sequence of tests and experiments, and each one builds on the synthetic dataset and models created earlier in the notebook. Some sections retrain earlier configurations with small adjustments, so running sections out of order is not recommended on a first run.
 
 Important: cells that must be rerun in a new session
 If you close the notebook and come back later, Colab resets its memory (variables, function definitions) even though your files on Drive remain untouched. Several cells define Python functions that are used repeatedly throughout the notebook, most importantly get_metrics_from_saved_model and get_test_metrics_from_saved_model, both used to evaluate a saved model's performance. Each of these functions must be defined (its cell run) before any later cell that calls it, otherwise you will see a NameError. The safest approach is to re-run the notebook from the top. If you want to jump straight to a specific results table further down, first re-run the cell that defines the function it depends on.
 
-GPU and time considerations
+GPU and time considerations:
 Each training run trains a full Transformer-based model from a pretrained checkpoint (PubMedBERT), even on the small synthetic dataset used here. Expect each individual training run to take a meaningful amount of time on a T4 GPU, and there are twelve separate configurations trained across the notebook (six testing configurations, plus a three-way chunk-size sweep, plus four overlap variants). Running the full notebook end to end in one sitting requires a considerable amount of GPU time. Colab's free tier imposes usage limits, and heavy or extended use may result in disconnection or restricted GPU access, additional compute capacity was purchased for this project to accommodate the total training time required. To reproduce only the final reported result, it is possible to skip most of the earlier exploratory dataset versions (Sections 2 through 4) and jump to Section 5 onward, which uses the final dataset design (v3) the reported results are based on.
